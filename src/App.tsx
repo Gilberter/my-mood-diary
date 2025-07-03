@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import useJournal  from './hooks/useJournal'; // Import the custom hook for journal entries
 import WriteEntry from './components/WriteEntry'; // Import the WriteEntry component 
 import EntryCard from './components/EntryCard'; // Import the EntryCard component
+import Dashboard from './components/Dashboard';
 import type { JournalEntry } from './types'; // Import the JournalEntry type
 import './index.css'
 import './App.css'
@@ -11,7 +12,7 @@ type View = 'dashboard' | 'entries' | 'calendar' | 'settings';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
-  const {entries, addEntry, editEntry} = useJournal(); // Use the custom hook to manage journal entries
+  const {entries, addEntry, editEntry, deleteEntry} = useJournal(); // Use the custom hook to manage journal entries
   const [showWriteEntry, setShowWriteEntry] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
 
@@ -38,6 +39,10 @@ function App() {
     }
     
   }
+  
+  const handleDeleteEntry = (deleteOldEntry: JournalEntry) => {
+    deleteEntry(deleteOldEntry); // Call the deleteEntry function from the custom hook
+  }
 
   const handleEditEntry = (editedEntry: JournalEntry) => {
     setSelectedEntry(editedEntry)
@@ -49,7 +54,7 @@ function App() {
   const renderCurrentView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <div>Dashboard</div>
+        return <Dashboard entries={entries} />; // Render the Dashboard component
       case 'entries':
         return (
           <div className="space-y-6">
@@ -58,7 +63,7 @@ function App() {
                   <h1 className="text-2xl font-bold text-gray-900">Your Journal Entries</h1>
                   <p className='text-gray-600 mb-4'>{entries.length} Entries</p>
                   {entries.map(entry => (
-                    <EntryCard entry={entry} onEdit={handleEditEntry} onDelete={() => console.log("Delete")}/>
+                    <EntryCard entry={entry} onEdit={handleEditEntry} onDelete={handleDeleteEntry}/>
                   ))}
                 </div>
             ) : (
