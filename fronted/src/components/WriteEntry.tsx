@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import type { JournalEntry } from "../types"; // Import the JournalEntry type
+import { format, parseISO} from 'date-fns';
 
 interface WriteEntryProps {
     onSave: (entry: JournalEntry) => void; // Function to handle saving the entry
@@ -20,16 +21,16 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry 
     useEffect(() => {
         if (initialEntry != null) {
         // If an initial entry is provided, populate the form fields with its data
-        setTitle(initialEntry.title);
-        setDate(initialEntry.date);
-        setMood(initialEntry.mood);
-        setContent(initialEntry.content);
+            setTitle(initialEntry.title);
+            setDate(initialEntry.date);
+            setMood(initialEntry.mood);
+            setContent(initialEntry.content);
         } else {
         // If no initial entry is provided, reset the form fields
-        setTitle("");
-        setDate("");
-        setMood("");
-        setContent("");
+            setTitle("");
+            setDate("");
+            setMood("");
+            setContent("");
         }   
     }, [initialEntry]); // Dependency array to run effect when initialEntry changes
     
@@ -51,7 +52,7 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry 
                 <label className="block text-sm font-medium text-gray-700">Date</label>
                 <input
                     type="date"
-                    value={Date.now() ? date : "" } // Default to today's date if no date is set
+                    value={date ? date : format(new Date(), 'yyyy-MM-dd')} // Default to today's date if no date is set
                     onChange={(e) => setDate(e.target.value)}
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-purple-500"
                     required
@@ -94,7 +95,7 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry 
                         const newEntry: JournalEntry = {
                             id: Date.now().toString(), // Simple ID generation
                             title,
-                            date: new Date().toISOString().split("T")[0], // Default to today's date if no date is set
+                            date: date ? date : format(new Date(), 'yyyy-MM-dd'), // Default to today's date if no date is set
                             mood,
                             content,
                         };
@@ -117,7 +118,7 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry 
                         const newEntry: JournalEntry = {
                             id: initialEntry.id, // Simple ID generation
                             title,
-                            date: initialEntry.date, // Default to today's date if no date is set
+                            date: date ? date : format(new Date(), 'yyyy-MM-dd'), // Default to today's date if no date is set
                             mood,
                             content,
                         };

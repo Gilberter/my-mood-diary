@@ -3,6 +3,7 @@ import useJournal  from './hooks/useJournal'; // Import the custom hook for jour
 import WriteEntry from './components/WriteEntry'; // Import the WriteEntry component 
 import EntryCard from './components/EntryCard'; // Import the EntryCard component
 import Dashboard from './components/Dashboard';
+import CalendarComponent from './components/Calendar'; // Import the CalendarComponent
 import type { JournalEntry } from './types'; // Import the JournalEntry type
 import './index.css'
 import './App.css'
@@ -63,7 +64,7 @@ function App() {
                   <h1 className="text-2xl font-bold text-gray-900">Your Journal Entries</h1>
                   <p className='text-gray-600 mb-4'>{entries.length} Entries</p>
                   {entries.map(entry => (
-                    <EntryCard entry={entry} onEdit={handleEditEntry} onDelete={handleDeleteEntry}/>
+                    <EntryCard key={entry.id} entry={entry} onEdit={handleEditEntry} onDelete={handleDeleteEntry}/>
                   ))}
                 </div>
             ) : (
@@ -86,16 +87,7 @@ function App() {
         </div> 
         )
       case 'calendar':
-        return (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-gray-900">Calendar View</h1>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-              <div className="text-4xl mb-4">📅</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Calendar Coming Soon</h3>
-              <p className="text-gray-600">Track your mood patterns over time with our interactive calendar view.</p>
-            </div>
-          </div>
-        );
+        return <CalendarComponent entries={entries} />; // Render the CalendarComponent
       case 'settings':
         return <div>Settings View</div>;
       default:
@@ -104,7 +96,7 @@ function App() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50' >
+    <div className='min-h-screen  bg-gray-50' >
       {/* Header */}
       <header className='border-b border-gray-200'>
         <div className='max-w-full mx-auto px-4 sm:px-6 lg:px-8'>
@@ -115,7 +107,7 @@ function App() {
               </div>
               <h1 className='text-2xl font-bold text-gray-900'>Mood Diary</h1>
             </div>
-            <button onClick={handleNewEntryClick} className='text-1xl rounded-lg  cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-white bg-purple-600'>Write Entry</button>
+            <button onClick={handleNewEntryClick} className='text-1xl rounded-lg  cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-white save-button'>Write Entry</button>
           </div>
         </div>
       </header>
