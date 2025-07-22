@@ -90,7 +90,7 @@ const CalendarComponent: React.FC<CalendarProps> = ({entries}) => {
                             {
                                 entries.filter(entry => parseISO(entry.date).toDateString() === showEntryDay.toDateString()).map(entry => (
     
-                                    <EntryCard key={entry.id} entry={entry} onEdit={() => null} onDelete={()=>null}/>
+                                    <EntryCard key={entry._id} entry={entry} onEdit={() => null} onDelete={()=>null}/>
                                     
                                 ))
                             }

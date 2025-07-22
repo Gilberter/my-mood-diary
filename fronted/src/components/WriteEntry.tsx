@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import type { JournalEntry } from "../types"; // Import the JournalEntry type
-import { format, parseISO} from 'date-fns';
+import { format } from 'date-fns';
 
 interface WriteEntryProps {
     onSave: (entry: JournalEntry) => void; // Function to handle saving the entry
@@ -93,7 +93,7 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry 
                     onClick={(e) => {
                         e.preventDefault();
                         const newEntry: JournalEntry = {
-                            id: Date.now().toString(), // Simple ID generation
+                            
                             title,
                             date: date ? date : format(new Date(), 'yyyy-MM-dd'), // Default to today's date if no date is set
                             mood,
@@ -116,11 +116,12 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry 
                     onClick={(e) => {
                         e.preventDefault();
                         const newEntry: JournalEntry = {
-                            id: initialEntry.id, // Simple ID generation
+                            _id: initialEntry._id, // Simple ID generation
                             title,
                             date: date ? date : format(new Date(), 'yyyy-MM-dd'), // Default to today's date if no date is set
                             mood,
                             content,
+                            userId: initialEntry.userId
                         };
                         onSave(newEntry);
                         setTitle("");

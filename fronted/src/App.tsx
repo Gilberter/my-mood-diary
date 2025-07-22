@@ -1,21 +1,25 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import useJournal  from './hooks/useJournal'; // Import the custom hook for journal entries
 import WriteEntry from './components/WriteEntry'; // Import the WriteEntry component 
 import EntryCard from './components/EntryCard'; // Import the EntryCard component
 import Dashboard from './components/Dashboard';
 import CalendarComponent from './components/Calendar'; // Import the CalendarComponent
-import type { JournalEntry } from './types'; // Import the JournalEntry type
+import type { CreateNotePayload, JournalEntry, UpdateNotePayload } from './types'; // Import the JournalEntry type
 import './index.css'
 import './App.css'
+import { createNote, getNotes, updateNote, deleteNote } from './services/noteServices';
+import { set } from 'date-fns';
 
 type View = 'dashboard' | 'entries' | 'calendar' | 'settings';
 
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('dashboard');
-  const {entries, addEntry, editEntry, deleteEntry} = useJournal(); // Use the custom hook to manage journal entries
+  const {entries, setEntries, addEntry, editEntry, deleteEntry} = useJournal(); // Use the custom hook to manage journal entries
   const [showWriteEntry, setShowWriteEntry] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
+  const [error,setError] = useState<String | null>(null);
+  const [notes,setNotes] = useState<JournalEntry[] | null>(null)
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard' },
@@ -29,20 +33,61 @@ function App() {
     setShowWriteEntry(true); // Open modal for writing a new entry
   }
 
-  const handleNewEntry = (newEntry: JournalEntry) => {
-    if (selectedEntry) {
-      editEntry(newEntry); // Call the editEntry function from the custom hook
-      setSelectedEntry(null); // Reset selected entry after editing
-      setShowWriteEntry(false); // Close the WriteEntry modal
-    } else {
-      addEntry(newEntry); // Call the addEntry function from the custom hook
-      setShowWriteEntry(false); // Close the WriteEntry modal
-    }
-    
+  // Core logic for creating and updating a note
+  
+  const handleSaveEntry = async (entryToSave: JournalEntry) => {
+    console.log("Edited", entryToSave)
+    const userIdOperation = 'CURRENT_USER_ID'
+    setError(null)
+    try {
+      if (entryToSave._id) {
+        const payload: UpdateNotePayload = {
+          title: entryToSave.title,
+          content: entryToSave.content,
+          mood: entryToSave.mood,
+          date: entryToSave.date // Ensure ISO string
+           // Add the user ID here
+        }
+        const editedEntry = await updateNote(entryToSave._id,payload,userIdOperation)
+        editEntry(editedEntry)
+        setSelectedEntry(null); // Reset selected entry after editing
+        setShowWriteEntry(false); // Close the WriteEntry modal
+        alert(`Update ${entryToSave}`);
+     
+      } else {
+        const payload: CreateNotePayload = {
+          title: entryToSave.title,
+          content: entryToSave.content,
+          mood: entryToSave.mood,
+          date: entryToSave.date, // Ensure ISO string
+          userId: "CURRENT_USER_ID", // Add the user ID here
+        };
+        const newNote: JournalEntry = await createNote(payload)
+        addEntry(newNote)
+        setShowWriteEntry(false); // Close the WriteEntry modal
+        alert(`Created ${newNote}`)
+        console.log(newNote)
+      }
+    } catch (err:any) {
+        setError(`Error fetching entries: ${err.message}`)
+        console.log(error)
+      }
   }
   
-  const handleDeleteEntry = (deleteOldEntry: JournalEntry) => {
-    deleteEntry(deleteOldEntry); // Call the deleteEntry function from the custom hook
+  const handleDeleteEntry = async (deleteOldEntry: JournalEntry) => {
+    setError(null)
+    try{
+      if (deleteOldEntry._id && deleteOldEntry.userId){
+        const deletedNoted = await deleteNote(deleteOldEntry._id,deleteOldEntry.userId)
+        deleteEntry(deleteOldEntry);
+        alert(deletedNoted)
+      }
+      
+    } catch (err:any) {
+      setError(`Error fetching entries: ${err.message}`)
+
+    }
+     // Call the deleteEntry function from the custom hook
   }
 
   const handleEditEntry = (editedEntry: JournalEntry) => {
@@ -50,6 +95,25 @@ function App() {
     setShowWriteEntry(true); // Open modal for editing
      // Call the editEntry function from the custom hook
   }
+
+
+  const CURRENT_USER_ID = 'CURRENT_USER_ID'
+  useEffect(()=> {
+    const fetchNotes = async () => {
+      try{
+        const fetchedNotes = await getNotes(CURRENT_USER_ID)
+        setNotes(fetchedNotes)
+        setEntries(fetchedNotes)
+        return fetchedNotes
+      } catch (err:any) {
+        setError(err.message)
+        return null
+      }
+    }
+    fetchNotes()
+    
+    
+  }, [])
   
 
   const renderCurrentView = () => {
@@ -64,7 +128,7 @@ function App() {
                   <h1 className="text-2xl font-bold text-gray-900">Your Journal Entries</h1>
                   <p className='text-gray-600 mb-4'>{entries.length} Entries</p>
                   {entries.map(entry => (
-                    <EntryCard key={entry.id} entry={entry} onEdit={handleEditEntry} onDelete={handleDeleteEntry}/>
+                    <EntryCard key={entry._id} entry={entry} onEdit={handleEditEntry} onDelete={handleDeleteEntry}/>
                   ))}
                 </div>
             ) : (
@@ -150,7 +214,7 @@ function App() {
       {/* Modal New Entry */}
       {showWriteEntry && (
         <div className='w-full fixed inset-0 bg-gray-900 bg-opacity-10 flex items-center justify-center z-50'>
-          <WriteEntry onSave={handleNewEntry} onCancel={() => setShowWriteEntry(false)} initialEntry={selectedEntry} />
+          <WriteEntry onSave={handleSaveEntry} onCancel={() => setShowWriteEntry(false)} initialEntry={selectedEntry} />
         </div>
       )}
     </div>

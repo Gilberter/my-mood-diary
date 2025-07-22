@@ -19,7 +19,7 @@ const useJournal = () => {
     };
 
     const editEntry = (updatedEntry: JournalEntry) => {
-        const entryIndex = entries.findIndex(entry => entry.id === updatedEntry.id);
+        const entryIndex = entries.findIndex(entry => entry._id === updatedEntry._id);
         if (entryIndex !== -1) {
             const updatedEntries = [...entries];
             updatedEntries[entryIndex] = updatedEntry; // Update the entry at the found index
@@ -28,7 +28,7 @@ const useJournal = () => {
     }
 
     const deleteEntry = (deleteEntry: JournalEntry) => {
-        const entryIndex = entries.findIndex(entry => entry.id === deleteEntry.id);
+        const entryIndex = entries.findIndex(entry => entry._id === deleteEntry._id);
         if (entryIndex !== -1) {
             const updatedEntries = [...entries];
             updatedEntries.splice(entryIndex, 1); // Remove the entry at the found index
@@ -38,6 +38,7 @@ const useJournal = () => {
 
     return {
         entries, // Expose the entries state
+        setEntries,
         addEntry, // Expose the addEntry function
         editEntry, // Expose the editEntry function
         deleteEntry, // Expose the deleteEntry function

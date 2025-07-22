@@ -22,8 +22,8 @@ export interface UpdateNotePayload {
   content?: string;
   mood?: string;
   date?: string;
-  userId?: string; // Required for authorization on backend (even if not strictly changed)
-  _id?:string;
+  userId: string; // Required for authorization on backend (even if not strictly changed)
+  _id: string;
 }
 
 export interface ApiResponse<T> {

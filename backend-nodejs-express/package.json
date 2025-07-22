@@ -1,0 +1,37 @@
+{
+  "name": "my-node-express-backend",
+  "version": "1.0.0",
+  "description": "A sample Node.js Express backend for a React TypeScript application.",
+  "main": "dist/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "dev": "nodemon --exec ts-node src/server.ts"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "typescript",
+    "backend",
+    "api"
+  ],
+  "author": "Hensemberk",
+  "license": "ISC",
+  "dependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.14",
+    "axios": "^1.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.4",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@types/mongoose": "^5.11.96"
+  }
+}
