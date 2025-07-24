@@ -7,6 +7,8 @@ import connectDB from './config/db';
 import noteRoutes from './routes/noteRoutes'; // Import your note routes
 import { errorHandler } from './middleware/errorHandler'; // Import your error handler middleware
 import authRoutes from './routes/authRoutes'
+import cookieParser from "cookie-parser";
+
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -17,8 +19,12 @@ const port = process.env.PORT || 5001; // Use environment variable or default to
 connectDB()
 
 // Middleware
-app.use(cors()); // Enable CORS for all origins in development
+app.use(cors({
+  origin: 'http://localhost:5173', // your frontend URL
+  credentials: true,              // allow cookies
+})); // Enable CORS for all origins in development
 app.use(express.json()); // Body parser for JSON requests
+app.use(cookieParser());
 
 // --- API Routes ---
 app.use('/api/notes', noteRoutes);

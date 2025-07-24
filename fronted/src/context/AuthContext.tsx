@@ -1,14 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserData }   from '../types'; // Import the UserData type
 import type {ReactNode} from 'react'
+import { profile, login, logout} from '../services/userServices';
 
 interface AuthContextType {
     isAuthenticated: boolean;
     user: UserData | null;
-    token: string | null;
     loading: boolean; // Indicates if the initial authentication check is still ongoing
-    loginAuth: (token: string, userData: UserData) => void;
-    logout: () => void;
+    loginAuth: (email: string, password: string) => void;
+    logoutAuth: () => void;
     // You might add a signup function here if it directly updates auth state
     // signup: (token: string, userData: UserData) => void;
 }
@@ -26,28 +26,26 @@ export const AuthContextProvider = AuthContext.Provider
 export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [user, setUser] = useState<UserData | null>(null)
-    const [token, setToken] = useState<string | null> (null)
     const [loading, setLoading] = useState<boolean>(true)
 
     useEffect(() => {
-        const loadAuthData = () => {
+        const loadAuthData = async () => {
             try {
                 // Prefer HTTP-only cookies for JWTs
                 // For the moment use localStorage
-                const storedToken = localStorage.getItem('authToken')
-                const storedUser = localStorage.getItem('authUser')
+                const user = await profile()
 
-                if (storedToken && storedUser) {
-                    const parsedUser: UserData = JSON.parse(storedUser);
+                if (user) {
+                    const parsedUser: UserData = user;
                     setIsAuthenticated(true);
-                    setToken(storedToken);
                     setUser(parsedUser);
+                } else {
+                    setIsAuthenticated(false);
+                    setUser(null); 
                 }
             } catch (error) {
                 console.error("Failed to load auth data from storage:", error);
-                // Clear any corrupted data
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('authUser');
+     
             } finally {
                 setLoading(false); // Authentication check is complete
             }
@@ -55,35 +53,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         loadAuthData();
     }, []);
     // Function to handle user login
-    const loginAuth = (newToken: string, userData: UserData) => {
-        // Store token and user data in local storage (or secure cookies)
-        localStorage.setItem('authToken', newToken);
-        localStorage.setItem('authUser', JSON.stringify(userData));
-
-        setIsAuthenticated(true);
-        setToken(newToken);
-        setUser(userData);
+    const loginAuth = async (email: string,password:string) => {
+        try {
+            await login(email,password)
+            const user = await profile()
+            setIsAuthenticated(true);
+            setUser(user);
+        } catch {
+            throw new Error("Login unsuccessfull")
+        } finally {
+            setLoading(false);
+        }
+        
     };
 
     // Function to handle user logout
-    const logout = () => {
+    const logoutAuth = async () => {
         // Remove token and user data from local storage
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
-
-        setIsAuthenticated(false);
-        setToken(null);
-        setUser(null);
+        const message = await logout()
+        if(message){
+            setIsAuthenticated(false);
+            setUser(null);
+        }else {
+            throw new Error("Logout Unsuccessfull")
+        }
+        
     };
 
     // The value provided to consumers of the context
     const authContextValue: AuthContextType = {
         isAuthenticated,
         user,
-        token,
         loading,
         loginAuth,
-        logout,
+        logoutAuth,
     };
 
     return (

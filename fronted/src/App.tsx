@@ -6,11 +6,11 @@ import Dashboard from './components/Dashboard';
 import CalendarComponent from './components/Calendar'; // Import the CalendarComponent
 import LoginForm from './components/Auth/LoginForm';
 import RegisterForm from './components/Auth/RegisterForm';
-import type { CreateNotePayload, JournalEntry, UpdateNotePayload, UserData } from './types'; // Import the JournalEntry type
+import type { CreateNotePayload, JournalEntry, UpdateNotePayload } from './types'; // Import the JournalEntry type
 import './index.css'
 import './App.css'
 import { createNote, getNotes, updateNote, deleteNote } from './services/noteServices';
-import { login,profile, register } from './services/userServices';
+import { login, register } from './services/userServices';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 
@@ -29,7 +29,7 @@ const PrivateRoute: React.FC = () => {
 
 function AppContent() {
 
-  const { loginAuth,logout,isAuthenticated,user,loading } = useAuth();
+  const { loginAuth,logoutAuth,isAuthenticated,user,loading } = useAuth();
   const CURRENT_USER_ID: string = user?.id || ''; // Get the actual user ID
  
 
@@ -122,6 +122,7 @@ function AppContent() {
       // Only attempt to fetch notes if the user is authenticated
       // AND a CURRENT_USER_ID is available.
       // We also check 'loading' to prevent fetching before auth context is ready.
+      console.log(isAuthenticated,CURRENT_USER_ID,loading)
       if (isAuthenticated && CURRENT_USER_ID && !loading) {
         setError(null); // Clear previous errors
         try {
@@ -147,11 +148,13 @@ function AppContent() {
 
   const sendLogin = async (email:string,password:string) => {
     setError(null)
-    const loginTokenUser = async () => {
+
+    const loginUser = async () => {
       try{
         const data = await login(email,password)
         if(data) {
-          return data
+          loginAuth(email,password)
+          return true
         }
       } catch (err:any) {
         setErrorLogin(true)
@@ -159,27 +162,8 @@ function AppContent() {
         return null
       }
     }
-    const loginUser = async () => {
-      try{
-        
-        const token = await loginTokenUser()
-        if (token){
-          const data = await profile(token)
-          loginAuth(token,data)
-        } else {
-          setErrorLogin(true)
-          throw new Error("Invalidad email or password")
-        }
-        
-      } catch (err:any) {
-        setError(err)
-        setErrorLogin(true)
-        return null
-      }
-    }
-    loginUser()
-    const data = await loginTokenUser()
-    if(data){
+    const istrue = await loginUser()
+    if(istrue){
       return true
     } else {
       return false
@@ -192,10 +176,9 @@ function AppContent() {
     setError(null)
     const registerUser = async () => {
       try{
-        const token = await register(username,email,password)
-        if (token){
-          const data = await profile(token)
-          loginAuth(token,data)
+        const data = await register(username,email,password)
+        if (data){
+          await sendLogin(email,password)
         }
       } catch (err:any) {
         setError(err)
@@ -279,7 +262,7 @@ function AppContent() {
               )}
 
               {isAuthenticated && (
-                <button onClick={logout} className='text-1xl rounded-lg  cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-white save-button'>logout</button>
+                <button onClick={logoutAuth} className='text-1xl rounded-lg  cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-white save-button'>logout</button>
               )}
             </div>
             
