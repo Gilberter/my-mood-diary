@@ -2,13 +2,16 @@ import React, { useEffect } from "react";
 import type { JournalEntry } from "../types"; // Import the JournalEntry type
 import { format } from 'date-fns';
 
+
 interface WriteEntryProps {
     onSave: (entry: JournalEntry) => void; // Function to handle saving the entry
     onCancel: () => void; // Function to handle canceling the entry
     initialEntry?: JournalEntry | null// Optional initial entry for editing
+    CURRENT_USER_ID:string
+    
 }
 
-const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry }) => {
+const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry,CURRENT_USER_ID }) => {
     const [title, setTitle] = React.useState("");       
     const [date, setDate] = React.useState("");
     const [mood, setMood] = React.useState("");
@@ -31,6 +34,7 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry 
             setDate("");
             setMood("");
             setContent("");
+            
         }   
     }, [initialEntry]); // Dependency array to run effect when initialEntry changes
     
@@ -98,6 +102,7 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry 
                             date: date ? date : format(new Date(), 'yyyy-MM-dd'), // Default to today's date if no date is set
                             mood,
                             content,
+                            userId:CURRENT_USER_ID,
                         };
                         onSave(newEntry);
                         setTitle("");

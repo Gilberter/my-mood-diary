@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db';
 import noteRoutes from './routes/noteRoutes'; // Import your note routes
 import { errorHandler } from './middleware/errorHandler'; // Import your error handler middleware
-
+import authRoutes from './routes/authRoutes'
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -22,6 +22,7 @@ app.use(express.json()); // Body parser for JSON requests
 
 // --- API Routes ---
 app.use('/api/notes', noteRoutes);
+app.use('/api/auth', authRoutes)
 //This means that any requests starting with /api/notes will be handled by the route definitions within your noteRoutes file.
 // t will respond to POST /api/notes. If it defines router.get('/:id'), it will respond to GET /api/notes/:id.
 app.get('/', (req, res) => {

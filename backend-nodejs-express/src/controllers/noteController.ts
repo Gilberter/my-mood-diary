@@ -16,7 +16,7 @@ import { asyncHandler } from '../utils/asyncHandler'; // Import the asyncHandler
 export const getNotes = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   // In a real app, userId would come from authenticated user (e.g., req.user.id)
   // For now, let's use a placeholder or assume it's passed in query for testing
-  const userId = req.query.userId || 'test-user-id'; // Placeholder for userId
+  const userId = req.query.userId; 
 
   if (!userId) {
     return next(new ApiError('User ID is required to fetch notes.', 400));
@@ -70,11 +70,6 @@ export const createNote = asyncHandler(async (req: Request, res: Response, next:
     return next(new ApiError('Please include title, content, mood, and userId.', 400));
   }
 
-  // Basic validation for mood (Mongoose schema also handles enum validation)
-  const allowedMoods = ['Happy', 'Sad', 'Neutral', 'Excited', 'Anxious', 'Angry', 'Calm'];
-  if (!allowedMoods.includes(mood)) {
-    return next(new ApiError(`Invalid mood: ${mood}. Allowed moods are: ${allowedMoods.join(', ')}.`, 400));
-  }
 
   const newNote = await Note.create({
     title,

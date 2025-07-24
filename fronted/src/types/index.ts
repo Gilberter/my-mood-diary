@@ -9,6 +9,14 @@ export interface JournalEntry {
 }
 
 
+export interface UserData {
+  _id?: string;
+  id?:string;
+  email?:string;
+  username?: string;  
+}
+
+
 export interface CreateNotePayload {
   title: string;
   content: string;

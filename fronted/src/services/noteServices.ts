@@ -50,7 +50,6 @@ export const updateNote = async (noteId:string, updateData: UpdateNotePayload, u
     // <ApiResponse<JournalEntry>> type of data you expect to recieve
     const response = await notesApi.put<ApiResponse<JournalEntry>>(`/${noteId}`, { ...updateData, userId })
     if (response.data.success && response.data.data) {
-      console.log(response)
       return response.data.data
     }
     throw new Error(response.data.message || 'Failed to update note.');
@@ -66,7 +65,7 @@ export const deleteNote = async (noteId:string, userId:string):Promise<string> =
   try {
     const response = await notesApi.delete<ApiResponse<null>>(`/${noteId}`, {params: {userId:userId}})
     if (response.data.success) {
-      return `Note with ID ${noteId} deleted successfully`
+      return `Note with deleted successfully`
     }
     throw new Error(response.data.message || 'Failed to delete note: Unknown reason.');
   } catch (error:any) {
