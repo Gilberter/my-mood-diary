@@ -31,8 +31,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     useEffect(() => {
         const loadAuthData = async () => {
             try {
-                // Prefer HTTP-only cookies for JWTs
-                // For the moment use localStorage
+                // We are using HTTP-only cookies for JWTs
+            
                 const user = await profile()
 
                 if (user) {
@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
                     setUser(null); 
                 }
             } catch (error) {
-                console.error("Failed to load auth data from storage:", error);
+                throw new Error("Failed to login")
      
             } finally {
                 setLoading(false); // Authentication check is complete

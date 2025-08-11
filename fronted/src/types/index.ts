@@ -17,21 +17,13 @@ export interface UserData {
 }
 
 
-export interface CreateNotePayload {
+// This interface can be created and updated
+export interface NotePayload {
   title: string;
   content: string;
   mood: string;
-  date: string; // Optional, backend will default to now if not provided
-  userId: string; // For now, we'll hardcode or pass this for testing
-}
-
-export interface UpdateNotePayload {
-  title?: string;
-  content?: string;
-  mood?: string;
-  date?: string;
-  userId?: string; // Required for authorization on backend (even if not strictly changed)
-  _id?:string;
+  date: string;
+  userId: string; 
 }
 
 export interface ApiResponse<T> {

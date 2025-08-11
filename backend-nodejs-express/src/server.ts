@@ -19,10 +19,23 @@ const port = process.env.PORT || 5001; // Use environment variable or default to
 connectDB()
 
 // Middleware
+
+const allowedOrigins = [
+  'http://localhost:5173', // React dev
+  'http://localhost:5000', // FastAPI dev
+];
+
 app.use(cors({
-  origin: 'http://localhost:5173', // your frontend URL
-  credentials: true,              // allow cookies
-})); // Enable CORS for all origins in development
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json()); // Body parser for JSON requests
 app.use(cookieParser());
 

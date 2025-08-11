@@ -17,6 +17,8 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry,
     const [mood, setMood] = React.useState("");
     const [content, setContent] = React.useState("");
 
+    
+
 
     // Use useEffect to update form fields if initialEntry changes (e.g., switching from one edit to another)
     // This is important if the modal stays mounted but initialEntry changes
@@ -109,6 +111,7 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry,
                         setDate("");
                         setMood("");
                         setContent("");
+                        onCancel();
                     }}
                     className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 cursor-pointer"
                 >
@@ -133,6 +136,7 @@ const WriteEntry: React.FC<WriteEntryProps> = ({ onSave, onCancel, initialEntry,
                         setDate("");
                         setMood("");
                         setContent("");
+                        onCancel();
                     }}
                     className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 cursor-pointer"
                 >

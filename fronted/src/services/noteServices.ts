@@ -1,6 +1,6 @@
 import axios from "axios";
 //import dotenv from 'dotenv';
-import type {CreateNotePayload, JournalEntry, ApiResponse, UpdateNotePayload} from '../types/index'
+import type {JournalEntry, ApiResponse, NotePayload} from '../types/index'
 
 
 
@@ -30,7 +30,7 @@ export const getNotes = async (userId: string): Promise<JournalEntry[]> => {
   }
 };
 
-export const createNote = async (noteData: CreateNotePayload): Promise<JournalEntry> => {
+export const createNote = async (noteData: NotePayload): Promise<JournalEntry> => {
   try {
     const response = await notesApi.post<ApiResponse<JournalEntry>>('/', noteData);
     if (response.data.success && response.data.data) {
@@ -45,10 +45,10 @@ export const createNote = async (noteData: CreateNotePayload): Promise<JournalEn
   }
 };
 
-export const updateNote = async (noteId:string, updateData: UpdateNotePayload, userId: string): Promise<JournalEntry> => {
+export const updateNote = async (noteId:string, updateData: NotePayload): Promise<JournalEntry> => {
   try{
     // <ApiResponse<JournalEntry>> type of data you expect to recieve
-    const response = await notesApi.put<ApiResponse<JournalEntry>>(`/${noteId}`, { ...updateData, userId })
+    const response = await notesApi.put<ApiResponse<JournalEntry>>(`/${noteId}`, { ...updateData})
     if (response.data.success && response.data.data) {
       return response.data.data
     }
@@ -65,10 +65,24 @@ export const deleteNote = async (noteId:string, userId:string):Promise<string> =
   try {
     const response = await notesApi.delete<ApiResponse<null>>(`/${noteId}`, {params: {userId:userId}})
     if (response.data.success) {
-      return `Note with deleted successfully`
+      return "Note deleted successfully"
     }
     throw new Error(response.data.message || 'Failed to delete note: Unknown reason.');
   } catch (error:any) {
     throw new Error('Network error or unknown issue updating note.');
   }
 }
+
+export const buildNotePayload = (
+  entryData: JournalEntry,
+  userId: string,
+  moodPrediction?: string
+): NotePayload => {
+  return {
+    title: entryData.title,
+    content: entryData.content,
+    mood: entryData.mood || moodPrediction || 'Neutral',
+    date: entryData.date,
+    userId: entryData.userId || userId,
+  };
+};
