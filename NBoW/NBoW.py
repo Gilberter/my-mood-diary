@@ -13,3 +13,6 @@ class NBoW(nn.Module):
         prediction = self.fc(pooled)
         # prediction = [batch size, output dim]
         return prediction
+    
+
+    

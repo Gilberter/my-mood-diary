@@ -38,7 +38,7 @@ if pretrained_embedding.shape == model.embedding.weight.data.shape:
     model.embedding.weight.data = pretrained_embedding
     print("Pre-trained GloVe embeddings assigned successfully.")
 else:
-    print("Warning: GloVe embedding shape does not match model's embedding shape. Skipping.")
+    print("Warning: GloVe embedding shape does not match model's embedding shape. Skipping..")
 
 
 
