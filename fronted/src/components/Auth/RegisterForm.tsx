@@ -1,37 +1,69 @@
 import React, {  useState } from "react";
 import { Eye, EyeOff } from "lucide-react"; // or use any icon library you prefer
+import { register } from "../../services/userServices";
+import { useAuth } from "../../context/AuthContext";
+
 
 interface RegisterFormprops {
     closeRegister: () => void,
-    sendRegister: (username:string,email:string,password:string) => void
+    
 
 }
 
-const RegisterForm: React.FC<RegisterFormprops> = ({closeRegister,sendRegister}) => {
+const RegisterForm: React.FC<RegisterFormprops> = ({closeRegister}) => {
     const [username,setUsername] = useState<string>("")
     const [email,setEmail] = useState<string>("")
     const [password,setPassword] = useState<string>("")
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordMismatchError, setPasswordMismatchError] = useState('');
+    const { loginAuth } = useAuth();
 
-    const handleSubmit = (e:any) => {
+    const handleSubmit = async (e:any) => {
         e.preventDefault(); // Prevent default form submission behavior
 
         if (password !== confirmPassword) {
-        setPasswordMismatchError("Passwords don't match.");
+          setPasswordMismatchError("Passwords don't match.");
         return; // Stop the submission
         } else {
-        setPasswordMismatchError(""); // Clear error if they match
+          setPasswordMismatchError(""); // Clear error if they match
+        }
+        if (password.length < 10){
+          setPasswordMismatchError("Passwords are short");
         }
 
-        sendRegister(username, email, password);
-        setUsername("");
-        setEmail("");
-        setPassword("");
-        setConfirmPassword(""); // Clear confirm password field too
-        closeRegister()
+        const res = await sendRegister(username, email, password);
+        if(res) {
+          setUsername("");
+          setEmail("");
+          setPassword("");
+          setConfirmPassword(""); // Clear confirm password field too
+          closeRegister()
+        } else {
+          setUsername(username);
+          setEmail(email);
+          setPassword("");
+          setConfirmPassword(""); // Clear confirm password field too
+          
+        }
+        
     };
+
+    const sendRegister = async (username:string,email:string,password:string) => {
+      const response = await register(username,email,password)
+      if(response == null){
+        setPasswordMismatchError("Problem with the internet connection")
+        return false
+      } 
+
+      const resLogin = await loginAuth(email,password)
+      if(resLogin){
+        return true
+      } else {
+        return false
+      }
+      
+    }
 
     return (
         <div className="w-full sm:w-3/4 md:w-1/2 lg:w-1/3 max-w-md p-6 bg-white rounded-xl shadow-xl flex flex-col items-center">

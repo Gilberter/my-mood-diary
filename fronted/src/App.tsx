@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import toast, {Toaster} from 'react-hot-toast'
 
 import useJournal  from './hooks/useJournal'; // Import the custom hook for journal entries
@@ -17,13 +17,14 @@ import EntriesCards from './components/EntriesCards';
 import Settings from './components/Settings';
 
 // Imports Services
-import { login, register } from './services/userServices';
+import { login, logout, register } from './services/userServices';
 import { getPrediction } from './services/predictionServices';
 import { createNote, getNotes, updateNote, deleteNote, buildNotePayload } from './services/noteServices';
 
 // Imports Context and Providers
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ModalProvider, useModal } from './context/ModalContext';
+import Header from './components/Header';
 
 type View = 'dashboard' | 'entries' | 'calendar' | 'settings';
 
@@ -32,8 +33,8 @@ type View = 'dashboard' | 'entries' | 'calendar' | 'settings';
 
 function AppContent() {
   const { openModal } = useModal();
-  const { loginAuth,logoutAuth,isAuthenticated,user,loading } = useAuth();
-  const CURRENT_USER_ID: string = user?.id || ''; // Get the actual user ID
+  const { loginAuth,isAuthenticated,user,loading,logoutAuth } = useAuth();
+  const CURRENT_USER_ID: string = user?._id || ''; // Get the actual user ID
  
 
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -43,12 +44,14 @@ function AppContent() {
   
 
 
-  const navigationItems: {id:View,label:string}[] = [
+
+  const navigationItems: {id:View,label:string}[] = useMemo(() => [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'entries', label: 'Entries' },
     { id: 'calendar', label: 'Calendar' },
     { id: 'settings', label: 'Settings' },
   ]
+  ,[])
 
   const handleNewEntryClick = () => {
     setSelectedEntry(null); // Reset selected entry for new entry
@@ -117,7 +120,7 @@ function AppContent() {
       // Only attempt to fetch notes if the user is authenticated
       // AND a CURRENT_USER_ID is available.
       // We also check 'loading' to prevent fetching before auth context is ready.
-      
+      console.log(isAuthenticated,CURRENT_USER_ID,loading,user)
       if (isAuthenticated && CURRENT_USER_ID && !loading) {
         
         try {
@@ -141,40 +144,7 @@ function AppContent() {
     fetchNotes();
   }, [isAuthenticated, CURRENT_USER_ID, loading, setEntries]);
 
-  const sendLogin = async (email:string,password:string) => {
-    const loginUser = async () => {
-        const data = await login(email,password)
-        if(data) {
-          loginAuth(email,password)
-          return true
-        } else {
-          toast.error("There is an error loging you, please try again")
-        }
-        return null
-    }
-    const istrue = await loginUser()
-    if(istrue){
-      return true
-    } else {
-      return false
-    }
-    
-  }
 
-  const sendRegister = async (username:string,email:string,password:string) => {
-    
-    const registerUser = async () => {
-
-      const data = await register(username,email,password)
-      if (data){
-        await sendLogin(email,password)
-      } else {
-        toast.error("There is an error when register, please try again")
-      }
-      return null
-    }
-    registerUser()
-  }
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -206,33 +176,7 @@ function AppContent() {
         }}
       />
       {/* Header */}
-      <header className='border-b border-gray-200'>
-        <div className='max-w-full mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='flex items-center justify-between h-20 py-8'>
-            <div className='flex items-center justify-between h-16 gap-4'>
-              <div className='w-10 h-10 bg-gradient-to-br from-blue-600 to-green-200 rounded-lg flex items-center justify-center'>
-                <span className="text-3xl text-white font-bold text-sm">MD</span>
-              </div>
-              <h1 className='text-2xl font-bold text-gray-900'>Mood Diary</h1>
-            </div>
-            <div className='space-x-4'>
-              {isAuthenticated && (
-              <button onClick={handleNewEntryClick} className='text-1xl rounded-lg  cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-white save-button'>Write Entry</button>
-              )}
-    
-              {!isAuthenticated && (
-                <button onClick={() => openModal("registerLogin")} className='text-1xl rounded-lg  cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-white save-button'>Write Entry</button>  
-              )}
-
-              {isAuthenticated && (
-                <button onClick={logoutAuth} className='text-1xl rounded-lg  cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-white save-button'>logout</button>
-              )}
-            </div>
-            
-            
-          </div>
-        </div>
-      </header>
+      <Header openModal={openModal} isAuthenticated={isAuthenticated} logoutAuth={logoutAuth}/>
 
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         <div className='flex gap-8'>
@@ -273,7 +217,7 @@ function AppContent() {
         
       </div>
 
-      <ModalManager CURRENT_USER_ID={CURRENT_USER_ID} handleSaveEntry={handleSaveEntry} initialEntry={selectedEntry} sendLogin={sendLogin} sendRegister={sendRegister}/>
+      <ModalManager CURRENT_USER_ID={CURRENT_USER_ID} handleSaveEntry={handleSaveEntry} initialEntry={selectedEntry} />
 
     </div>
     

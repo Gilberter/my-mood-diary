@@ -28,7 +28,7 @@ export interface NotePayload {
 
 export interface ApiResponse<T> {
   success: boolean;
-  data?: T;
+  data: T;
   count?: number; // Useful for list responses
   message?: string; // For error messages or success messages
 }

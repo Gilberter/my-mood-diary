@@ -8,11 +8,10 @@ interface ModalManagerProps {
     CURRENT_USER_ID: string;
     handleSaveEntry: (entryToSave: JournalEntry) => void,
     initialEntry: JournalEntry | null,
-    sendLogin: (email:string,password:string) => Promise<boolean>,
-    sendRegister: (username:string,email:string,password:string) => void
+    
 }
 
-export default function ModalManager({CURRENT_USER_ID, handleSaveEntry,sendLogin,sendRegister,initialEntry}: ModalManagerProps) {
+export default function ModalManager({CURRENT_USER_ID, handleSaveEntry,initialEntry}: ModalManagerProps) {
     const {activeModal, openModal, closeModal} = useModal();
 
 
@@ -25,10 +24,10 @@ export default function ModalManager({CURRENT_USER_ID, handleSaveEntry,sendLogin
                 <WriteEntry onSave={handleSaveEntry} onCancel={closeModal} CURRENT_USER_ID={CURRENT_USER_ID} initialEntry={initialEntry} />
             )}
             {activeModal === "login" && (
-                <LoginForm closeLogin={closeModal} sendLogin={sendLogin} />
+                <LoginForm closeLogin={closeModal}/>
             )}
             {activeModal === "register" && (
-                <RegisterForm closeRegister={closeModal} sendRegister={sendRegister} />
+                <RegisterForm closeRegister={closeModal}  />
             )}
             {activeModal === "registerLogin" && (
                 <div className='fixed inset-0 flex items-center justify-center z-50 bg-op backdrop-blur-sm'> {/* Improved overlay */}

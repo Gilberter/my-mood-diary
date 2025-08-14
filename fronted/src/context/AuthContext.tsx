@@ -7,7 +7,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     user: UserData | null;
     loading: boolean; // Indicates if the initial authentication check is still ongoing
-    loginAuth: (email: string, password: string) => void;
+    loginAuth: (email: string, password: string) => Promise<Boolean>;
     logoutAuth: () => void;
     // You might add a signup function here if it directly updates auth state
     // signup: (token: string, userData: UserData) => void;
@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
                     setUser(null); 
                 }
             } catch (error) {
-                throw new Error("Failed to login")
+                setIsAuthenticated(false)
      
             } finally {
                 setLoading(false); // Authentication check is complete
@@ -53,25 +53,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         loadAuthData();
     }, []);
     // Function to handle user login
-    const loginAuth = async (email: string,password:string) => {
+    const loginAuth = async (email: string, password: string): Promise<boolean> => {
+        
         try {
-            await login(email,password)
-            const user = await profile()
-            setIsAuthenticated(true);
-            setUser(user);
-        } catch {
-            throw new Error("Login unsuccessfull")
-        } finally {
+            const user = await login(email, password);
+            if (user) {
+                setIsAuthenticated(true);
+                setUser(user);
+                return true;
+            } else {
+                setIsAuthenticated(false);
+                setUser(null);
+                return false;
+            }
+        } catch (err) {
+            throw new Error("Network error")
+        } 
+        finally {
             setLoading(false);
         }
-        
     };
 
     // Function to handle user logout
     const logoutAuth = async () => {
         // Remove token and user data from local storage
-        const message = await logout()
-        if(message){
+        const success = await logout()
+        if(success){
             setIsAuthenticated(false);
             setUser(null);
         }else {

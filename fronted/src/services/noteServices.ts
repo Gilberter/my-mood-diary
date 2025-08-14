@@ -2,9 +2,9 @@ import axios from "axios";
 //import dotenv from 'dotenv';
 import type {JournalEntry, ApiResponse, NotePayload} from '../types/index'
 
+// noteServices.ts
 
-
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
 
 const notesApi = axios.create({
     baseURL: `${API_BASE_URL}/notes`,
@@ -12,6 +12,14 @@ const notesApi = axios.create({
         'Content-Type': 'application/json'
     }
 })
+
+const handleAxiosError = (error: unknown, defaultMsg: string): never => {
+  if (axios.isAxiosError(error) && error.response) {
+    throw new Error(error.response.data.message || defaultMsg);
+  }
+  throw new Error(`Network error: ${defaultMsg}`);
+};
+
 
 
 export const getNotes = async (userId: string): Promise<JournalEntry[]> => {
@@ -23,9 +31,7 @@ export const getNotes = async (userId: string): Promise<JournalEntry[]> => {
     throw new Error(response.data.message || 'Failed to fetch notes.');
   } catch (error: any) {
     // Axios error handling
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data.message || 'Error fetching notes.');
-    }
+    handleAxiosError(error,"Failed to fetch notes")
     throw new Error('Network error or unknown issue fetching notes.');
   }
 };
@@ -38,9 +44,7 @@ export const createNote = async (noteData: NotePayload): Promise<JournalEntry> =
     }
     throw new Error(response.data.message || 'Failed to create note.');
   } catch (error: any) {
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data.message || 'Error creating note.');
-    }
+    handleAxiosError(error,"Failed to create note")
     throw new Error('Network error or unknown issue creating note.');
   }
 };
@@ -54,9 +58,7 @@ export const updateNote = async (noteId:string, updateData: NotePayload): Promis
     }
     throw new Error(response.data.message || 'Failed to update note.');
   } catch (error: any) {
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data.message || 'Error updating note.');
-    }
+    handleAxiosError(error,"Failed to update notes")
     throw new Error('Network error or unknown issue updating note.');
   }
 }
@@ -69,6 +71,7 @@ export const deleteNote = async (noteId:string, userId:string):Promise<string> =
     }
     throw new Error(response.data.message || 'Failed to delete note: Unknown reason.');
   } catch (error:any) {
+    handleAxiosError(error,"Failed to delete note")
     throw new Error('Network error or unknown issue updating note.');
   }
 }

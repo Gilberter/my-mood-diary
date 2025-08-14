@@ -1,40 +1,42 @@
 
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react"; // or use any icon library you prefer
+import { useAuth } from "../../context/AuthContext";
 
 
 interface LoginFormProps {
-    closeLogin: () => void,
-    sendLogin: (email:string,password:string) =>  Promise<boolean>;
-
-
+    closeLogin: () => void
 }
 
 
-const LoginForm: React.FC<LoginFormProps> = ({closeLogin, sendLogin}) => {
+const LoginForm: React.FC<LoginFormProps> = ({closeLogin}) => {
     const [email,setEmail] = useState<string>("")
     const [password,setPassword] = useState<string>("")
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [errorLogin, setErrorLogin] = useState<boolean>(false);
+    const { loginAuth } = useAuth();
 
     const handleSumbit = async (e: React.FormEvent) => {
         e.preventDefault()
         
-        try {
-            const response = await sendLogin(email,password)
-            if (response) {
-                setEmail("")
-                setPassword("")
-                closeLogin()
-            } else {
-                setEmail(email)
-                setPassword(password)
-                setErrorLogin(true)
-            }
-        } catch (err:any) {
-            throw new Error("Invalid form")
+        const response = await loginAuth(email,password)
+        if (response) {
+            setEmail("")
+            setPassword("")
+            setErrorLogin(false)
+            closeLogin()
+            
+        } else {
+            setEmail(email)
+            setPassword(password)
+            setErrorLogin(true)
+           
         }
+        
     }
+  
+   
+
 
     return (
         <div className="w-1/2 sm:w-1/4 max-w-2xl space-y-4 sm:space-y-6 p-4 sm:p-6 bg-white rounded-lg shadow-md flex flex-col justify-center items-center">
@@ -62,16 +64,16 @@ const LoginForm: React.FC<LoginFormProps> = ({closeLogin, sendLogin}) => {
                         </button>
                     </div>
                 </div>
-                
+               
                 {errorLogin ? (
-                    <div>
+                    <div className="space-y-6">
                         <p className="mt-1 text-sm text-red-600">Invalidad Email or Password Try-Again</p>
                         <div className="flex justify-between space-x-6">
                             <button className="inline-flex justify-center py-2 px-4 cursor-pointer border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" onClick={closeLogin}>Cancel</button>
                             <button className="inline-flex justify-center py-2 px-4 cursor-pointer border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onClick={handleSumbit}
                                  type="submit">Login</button>
                         </div>
-                        </div>
+                    </div>
                 ) : (
                     <div className="flex justify-between space-x-6">
                         <button className="inline-flex justify-center py-2 px-4 cursor-pointer border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" onClick={closeLogin}>Cancel</button>
