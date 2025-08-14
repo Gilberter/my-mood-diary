@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { sendResponse } from '../utils/sendResponse';
+import ApiError from '../errors/ApiError';
+import { send } from 'process';
 
 dotenv.config();
 
@@ -34,14 +37,14 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction) => 
 
 export const requireAuth = (req:AuthRequest, res:Response, next:NextFunction) => {
   const token = req.cookies.token;
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
+  if (!token) return sendResponse(res,401,null,"Access denied. No token provided.",false)
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(403).json({ message: "Invalid token" });
+    return sendResponse(res,403,null,"Netwoek error or unknown issue to authorize.",false);
   }
 };
 

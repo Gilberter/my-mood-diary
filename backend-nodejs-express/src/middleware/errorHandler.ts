@@ -2,17 +2,8 @@
 
 import { Request, Response, NextFunction } from 'express';
 import ApiError from '../errors/ApiError'; // Import your custom error class
+import { sendResponse } from '../utils/sendResponse';
 
-/**
- * @function errorHandler
- * @description Centralized error handling middleware for Express.
- * This middleware catches errors passed via `next(err)` or thrown in async handlers.
- * It sends a standardized JSON error response to the client.
- * @param {any} err - The error object.
- * @param {Request} req - The Express request object.
- * @param {Response} res - The Express response object.
- * @param {NextFunction} next - The next middleware function (not typically called here for errors).
- */
 export const errorHandler = (
   err: any,
   req: Request,
@@ -31,12 +22,5 @@ export const errorHandler = (
     statusCode = 500;
     message = 'An unexpected error occurred.';
   }
-
-  // Send the standardized JSON error response
-  res.status(statusCode).json({
-    success: false,
-    message: message,
-    // Only send stack trace in development for debugging
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-  });
+  sendResponse(res,statusCode,null,message,false)
 };
