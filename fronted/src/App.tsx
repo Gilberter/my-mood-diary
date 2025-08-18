@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import toast, {Toaster} from 'react-hot-toast'
+import {useMemo, useState } from 'react'
+import {Toaster} from 'react-hot-toast'
 
 import useJournal  from './hooks/useJournal'; // Import the custom hook for journal entries
-import type { JournalEntry } from './types'; // Import the JournalEntry type
 import './index.css'
 import './App.css'
 import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
@@ -16,31 +15,23 @@ import CalendarComponent from './components/Calendar'; // Import the CalendarCom
 import EntriesCards from './components/EntriesCards';
 import Settings from './components/Settings';
 
-// Imports Services
-import { login, logout, register } from './services/userServices';
-import { getPrediction } from './services/predictionServices';
-import { createNote, getNotes, updateNote, deleteNote, buildNotePayload } from './services/noteServices';
-
 // Imports Context and Providers
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ModalProvider, useModal } from './context/ModalContext';
 import Header from './components/Header';
 
-type View = 'dashboard' | 'entries' | 'calendar' | 'settings';
+type View = 'dashboard' | 'entries' | 'calendar' | 'settings' | 'tools';
 
 
 
 
 function AppContent() {
   const { openModal } = useModal();
-  const { loginAuth,isAuthenticated,user,loading,logoutAuth } = useAuth();
+  const { user,loading } = useAuth();
   const CURRENT_USER_ID: string = user?._id || ''; // Get the actual user ID
- 
-
   const [currentView, setCurrentView] = useState<View>('dashboard');
-  const {entries, setEntries, addEntry, editEntry, deleteEntry} = useJournal(); // Use the custom hook to manage journal entries
-  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
-  const [notes,setNotes] = useState<JournalEntry[] | null>(null) 
+  const journalApi = useJournal();
+  const {entries, handleEditEntry, handleDeleteEntry, handleSaveEntry, selectedEntry, handleNewEntryClick} = journalApi;
   
 
 
@@ -50,99 +41,13 @@ function AppContent() {
     { id: 'entries', label: 'Entries' },
     { id: 'calendar', label: 'Calendar' },
     { id: 'settings', label: 'Settings' },
+    { id: 'tools', label: 'Tools' },
   ]
   ,[])
 
-  const handleNewEntryClick = () => {
-    setSelectedEntry(null); // Reset selected entry for new entry
-    openModal("writeEntry"); // Open modal for writing a new entry
-  }
-
-  // Core logic for creating and updating a note
   
-  const handleSaveEntry = useCallback(
-    async (entryToSave: JournalEntry) => { 
-      if (entryToSave._id) {
-        
-        const payload = buildNotePayload(entryToSave,CURRENT_USER_ID)
-        const editedEntry = await updateNote(entryToSave._id,payload)
-        editEntry(editedEntry)
-        setSelectedEntry(null); // Reset selected entry after editing 
-        // // Close the WriteEntry modal
-        toast.success("Note Updated")
-     
-      } else {
-        
-        if (entryToSave.mood == "") {
-          const moodPreticted = await getPrediction(entryToSave.content)
-          const moodPredictedClass = moodPreticted.class == 1 ? "Happy" : "Sad"
-          const payload = buildNotePayload(entryToSave,CURRENT_USER_ID,moodPredictedClass)
-          
-          const newNote: JournalEntry = await createNote(payload)
-          addEntry(newNote)
-           // Close the WriteEntry modal
-          toast.success("Note created succesfully")
-        } else {
 
-          const payload = buildNotePayload(entryToSave,CURRENT_USER_ID)
-          const newNote: JournalEntry = await createNote(payload)
-          addEntry(newNote)
-          // Close the WriteEntry modal
-          toast.success("Note created succesfully")
-        }
-        
-      }
-  }, [addEntry]
-  ) 
   
-  const handleDeleteEntry = useCallback(
-    async (deleteOldEntry: JournalEntry) => {
-      if (deleteOldEntry._id && deleteOldEntry.userId){
-        const message = await deleteNote(deleteOldEntry._id,deleteOldEntry.userId)
-        deleteEntry(deleteOldEntry);
-        
-        toast.success(message)
-      } else {
-        toast.error("There is an error deleting the note, check you internet")  
-      }
-      
-  }
-    ,[deleteEntry]) 
-
-  const handleEditEntry = (editedEntry: JournalEntry) => {
-    setSelectedEntry(editedEntry)
-    openModal("writeEntry"); // Open modal for editing
-     // Call the editEntry function from the custom hook
-  }
-
-  useEffect(() => {
-    const fetchNotes = async () => {
-      // Only attempt to fetch notes if the user is authenticated
-      // AND a CURRENT_USER_ID is available.
-      // We also check 'loading' to prevent fetching before auth context is ready.
-      console.log(isAuthenticated,CURRENT_USER_ID,loading,user)
-      if (isAuthenticated && CURRENT_USER_ID && !loading) {
-        
-        try {
-          const fetchedNotes = await getNotes(CURRENT_USER_ID);
-          setNotes(fetchedNotes); // Update internal notes state
-          setEntries(fetchedNotes); // Update useJournal's entries state
-        } catch (err: any) {
-          toast.error("There is an error loading the notes, press F5")
-          
-          // If fetching fails, clear entries to prevent showing stale data
-          setNotes([]);
-          setEntries([]);
-        }
-      } else if (!isAuthenticated && !loading) {
-        // If not authenticated, clear any existing notes
-        setNotes([]);
-        setEntries([]);
-      }
-    };
-
-    fetchNotes();
-  }, [isAuthenticated, CURRENT_USER_ID, loading, setEntries]);
 
 
 
@@ -157,7 +62,7 @@ function AppContent() {
       case 'settings':
         return <Settings />
       default:
-        return <div>Select a view</div>;
+        return <div>Select a view</div>
     }
   }
 
@@ -176,7 +81,7 @@ function AppContent() {
         }}
       />
       {/* Header */}
-      <Header openModal={openModal} isAuthenticated={isAuthenticated} logoutAuth={logoutAuth}/>
+      <Header openModal={openModal} />
 
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         <div className='flex gap-8'>

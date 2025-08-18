@@ -1,14 +1,15 @@
+import { useAuth } from "../context/AuthContext"
 
 type modalType = "writeEntry" | "login" | "register" | "registerLogin" | null
 
 
 interface HeaderProps {
     openModal: (type: modalType) => void,
-    isAuthenticated: boolean,
-    logoutAuth: () => void
+
 }
 
-const Header: React.FC<HeaderProps> = ({openModal,isAuthenticated,logoutAuth}) => {
+const Header: React.FC<HeaderProps> = ({openModal}) => {
+    const {isAuthenticated, logoutAuth} = useAuth()
     return (
         <header className='border-b border-gray-200'>
             <div className='max-w-full mx-auto px-4 sm:px-6 lg:px-8'>
